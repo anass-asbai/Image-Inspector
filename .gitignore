@@ -1,91 +1,240 @@
- # Environment Variables                                                                                                         
-  .env
-  .env.*                                                                                                                          
-                  
-  # Python Virtual Environments
-  venv/
-  .venv/
-  venv/
-  .env
+# Ignore environment files
+.env
+.env*
 
-  # Development Environment
-  .vscode/
-  .browser-history/
-  .node_modules/
-  node_modules/
-  __pycache__/
-  *.pyc
-  *.pyo
-  */__pycache__/
+# Virtual environment directories
+venv/
+.venv/
+ENV/
+env/
+env.bak/
+virtualenv/
 
-  # Build Artifacts
-  dist/
-  build/
-  *.egg-info/
-  *.whl
-  .eggs/
-  .epack-eggs/
-  .build/
+# IDE and editor directories
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
 
-  # OS Specific Files
-  .DS_Store
-  .Trashes
-  .Git
-  .OSC
-  .TrashInfo
-  .Thumbs.db
-  .thumbs.db
-  .psd_
-  .psd_files/
+# Build and distribution directories
+dist/
+build/
+*.egg-info/
+*.egg
+*.whl
+.eggs/
+.epack-eggs/
+.installer/
+.lib/
+.bin/
+.wheelhouse/
+.sdist/
+.man/
 
-  # Log & Temp Files
-  *.log
-  *.tmp
-  *.tmp_log
-  *.sqlitedb
-  *.sqlite3
-  *.db
-  *.sql
-  *.dat
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
 
-  # Compiled Files
-  *.dll
-  *.dll.config
-  *.exe
-  *.obj
-  *.ico
-  *.pdb
-  *.juz
-  *.jsd
-  *.md5
-  *.manifest
-  .Trashes
-  .Git
-  .OSC
-  .TrashInfo
-  .Thumbs.db
-  .thumbs.db
-  .psd_
-  .psd_files/
+# C extensions
+*.so
 
-  # Log & Temp Files
-  *.log
-  *.tmp
-  *.tmp_log
-  *.sqlitedb
-  *.sqlite3
-  *.db
-  *.sql
-  *.dat
+# Distribution / packaging
+.Python
+env/
+build/
+develop-eggs/
+parts/
+installed/
+lib/
+lib64/
+share/
 
-  # Compiled Files
-  *.dll
-  *.dll.config
-  *.exe
-  *.obj
-  *.ico
-  *.pdb
-  *.juz
-  *.jsd
-  *.md5
-  *.manifest
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# celery beat schedule file
+celerybeat-schedule.*
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+virtualenv/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+.dmypy.cfg
+
+# Pyre type checker
+.pyre/
+
+# Pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# celery beat schedule file
+celerybeat-schedule.*
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+virtualenv/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+.dmypy.cfg
+
+# Pyre type checker
+.pyre/
+
+# Pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Logs and databases
+*.log
+*.sqlite3
+*.db
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDouble
+.LSOverride
+
+# End session mustache
+._*
