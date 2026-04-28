@@ -1,23 +1,91 @@
-### AL ###
-#Template for AL projects for Dynamics 365 Business Central
-#launch.json folder
-.vscode/
-#Cache folder
-.alcache/
-#Symbols folder
-.alpackages/
-#Snapshots folder
-.snapshots/
-#Testing Output folder
-.output/
-#Extension App-file
-*.app
-#Rapid Application Development File
-rad.json
-#Translation Base-file
-*.g.xlf
-#License-files
-*.bclicense
-*.flf
-#Test results file
-TestResults.xml
+ # Environment Variables                                                                                                         
+  .env
+  .env.*                                                                                                                          
+                  
+  # Python Virtual Environments
+  venv/
+  .venv/
+  venv/
+  .env
+
+  # Development Environment
+  .vscode/
+  .browser-history/
+  .node_modules/
+  node_modules/
+  __pycache__/
+  *.pyc
+  *.pyo
+  */__pycache__/
+
+  # Build Artifacts
+  dist/
+  build/
+  *.egg-info/
+  *.whl
+  .eggs/
+  .epack-eggs/
+  .build/
+
+  # OS Specific Files
+  .DS_Store
+  .Trashes
+  .Git
+  .OSC
+  .TrashInfo
+  .Thumbs.db
+  .thumbs.db
+  .psd_
+  .psd_files/
+
+  # Log & Temp Files
+  *.log
+  *.tmp
+  *.tmp_log
+  *.sqlitedb
+  *.sqlite3
+  *.db
+  *.sql
+  *.dat
+
+  # Compiled Files
+  *.dll
+  *.dll.config
+  *.exe
+  *.obj
+  *.ico
+  *.pdb
+  *.juz
+  *.jsd
+  *.md5
+  *.manifest
+  .Trashes
+  .Git
+  .OSC
+  .TrashInfo
+  .Thumbs.db
+  .thumbs.db
+  .psd_
+  .psd_files/
+
+  # Log & Temp Files
+  *.log
+  *.tmp
+  *.tmp_log
+  *.sqlitedb
+  *.sqlite3
+  *.db
+  *.sql
+  *.dat
+
+  # Compiled Files
+  *.dll
+  *.dll.config
+  *.exe
+  *.obj
+  *.ico
+  *.pdb
+  *.juz
+  *.jsd
+  *.md5
+  *.manifest
