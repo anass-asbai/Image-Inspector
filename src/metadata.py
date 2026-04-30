@@ -1,61 +1,148 @@
-from PIL import Image
+from PIL import Image, ExifTags
 from PIL.ExifTags import TAGS, GPSTAGS
 
 
-def convert_to_degrees(value):
-    d = value[0][0] / value[0][1]
-    m = value[1][0] / value[1][1]
-    s = value[2][0] / value[2][1]
+# ---------------------------------------------------------------------------
+# Low-level helpers
+# ---------------------------------------------------------------------------
 
-    return d + (m / 60.0) + (s / 3600.0)
+def _rational_to_float(value) -> float | None:
+    """Convert a rational, tuple, or numeric value to float."""
+    try:
+        if hasattr(value, "numerator") and hasattr(value, "denominator"):
+            return value.numerator / value.denominator
+        if isinstance(value, (tuple, list)) and len(value) == 2:
+            return value[0] / value[1]
+        return float(value)
+    except (TypeError, ZeroDivisionError, ValueError):
+        return None
 
 
-def get_gps_info(exif_data):
-    gps_data = {}
+def _dms_to_decimal(dms) -> float | None:
+    """Convert (degrees, minutes, seconds) GPS tuple to decimal degrees."""
+    try:
+        d, m, s = (_rational_to_float(dms[i]) for i in range(3))
+        if None in (d, m, s):
+            return None
+        return d + (m / 60.0) + (s / 3600.0)
+    except (IndexError, TypeError):
+        return None
 
-    for tag_id, value in exif_data.items():
-        tag = TAGS.get(tag_id)
 
-        if tag == "GPSInfo":
-            for key in value:
-                name = GPSTAGS.get(key)
-                gps_data[name] = value[key]
+def _format_date(raw: str) -> str:
+    """Normalise EXIF date '2023:07:20 14:32:10' → '2023-07-20 14:32:10'."""
+    return raw.replace(":", "-", 2)
 
-    if "GPSLatitude" in gps_data and "GPSLongitude" in gps_data:
-        lat = convert_to_degrees(gps_data["GPSLatitude"])
-        lon = convert_to_degrees(gps_data["GPSLongitude"])
 
-        return {"latitude": lat, "longitude": lon}
+# ---------------------------------------------------------------------------
+# GPS extraction
+# ---------------------------------------------------------------------------
 
+def _get_raw_gps_ifd(exif) -> dict | None:
+    """Return the raw GPS IFD dict from any Pillow EXIF object shape."""
+    if hasattr(exif, "get_ifd"):
+        gps = exif.get_ifd(ExifTags.IFD.GPSInfo)
+        if gps:
+            return gps
+    if raw := exif.get(34853):
+        return raw
+    if isinstance(exif, dict):
+        return next(
+            (v for k, v in exif.items() if TAGS.get(k) == "GPSInfo"),
+            None,
+        )
     return None
 
 
-def extract_metadata(image_path):
+def extract_gps(exif) -> dict | None:
+    """
+    Return {"latitude": float, "longitude": float} in decimal degrees,
+    or None if GPS data is absent or malformed.
+    """
+    raw = _get_raw_gps_ifd(exif)
+    if not raw:
+        return None
+
+    gps = {GPSTAGS.get(k, k): v for k, v in raw.items()}
+
+    lat_dms = gps.get("GPSLatitude")
+    lon_dms = gps.get("GPSLongitude")
+    if not (lat_dms and lon_dms):
+        return None
+
+    lat = _dms_to_decimal(lat_dms)
+    lon = _dms_to_decimal(lon_dms)
+    if lat is None or lon is None:
+        return None
+
+    if gps.get("GPSLatitudeRef") == "S":
+        lat = -lat
+    if gps.get("GPSLongitudeRef") == "W":
+        lon = -lon
+
+    return {"latitude": round(lat, 6), "longitude": round(lon, 6)}
+
+
+# ---------------------------------------------------------------------------
+# EXIF extraction
+# ---------------------------------------------------------------------------
+
+def _load_exif(img: Image.Image):
+    """Return the EXIF object from a Pillow image, or None."""
+    if hasattr(img, "getexif"):
+        exif = img.getexif()
+        if exif:
+            return exif
+    if hasattr(img, "_getexif"):
+        return img._getexif()
+    return None
+
+
+def extract_metadata(image_path: str) -> dict:
+    """
+    Open *image_path* and return a flat metadata dict:
+
+        {
+            "device_make":  str | absent,
+            "device_model": str | absent,
+            "date":         str | absent,   # normalised to YYYY-MM-DD HH:MM:SS
+            "gps":          {"latitude": float, "longitude": float} | absent,
+        }
+
+    On any failure the dict contains a single "error" key.
+    """
     try:
         img = Image.open(image_path)
-        exif = img._getexif()
+    except FileNotFoundError:
+        return {"error": f"File not found: {image_path}"}
+    except OSError as exc:
+        return {"error": f"Cannot open image: {exc}"}
 
-        if not exif:
-            return {"error": "No metadata found"}
+    exif = _load_exif(img)
+    if not exif:
+        return {"error": "No EXIF metadata found"}
 
-        data = {}
+    # Tags we care about: EXIF name → output key (dates handled separately)
+    FIELD_MAP = {"Make": "device_make", "Model": "device_model"}
+    DATE_TAGS = ("DateTimeOriginal", "DateTime")   # priority order
 
-        for tag_id, value in exif.items():
-            tag = TAGS.get(tag_id, tag_id)
+    data: dict = {}
+    dates: dict = {}
 
-            if tag == "Make":
-                data["device_make"] = value
-            elif tag == "Model":
-                data["device_model"] = value
-            elif tag == "DateTime":
-                data["date"] = value
+    for tag_id, value in exif.items():
+        tag = TAGS.get(tag_id, tag_id)
+        if tag in FIELD_MAP:
+            data[FIELD_MAP[tag]] = str(value).strip().rstrip("\x00")
+        elif tag in DATE_TAGS and tag not in dates:
+            dates[tag] = str(value)
 
-        gps = get_gps_info(exif)
+    # Pick the most precise date available
+    raw_date = dates.get("DateTimeOriginal") or dates.get("DateTime")
+    if raw_date:
+        data["date"] = _format_date(raw_date)
 
-        if gps:
-            data["gps"] = gps
+    gps = extract_gps(exif)
+    if gps:
+        data["gps"] = gps
 
-        return data
-
-    except Exception as e:
-        return {"error": str(e)}
+    return data
