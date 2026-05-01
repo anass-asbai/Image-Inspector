@@ -1,35 +1,32 @@
+import numpy as np
 from PIL import Image
+from pathlib import Path
 
 
-def extract_lsb(image_path):
+def extract_lsb(image_path: str, sentinel: bytes = b"\x00") -> str:
     """
-    Extract hidden message using LSB steganography.
+    Extract a hidden message from an image using LSB steganography.
+    Stops at the first null byte (sentinel) to avoid garbage output.
     """
+    if not Path(image_path).is_file():
+        raise FileNotFoundError(f"Image not found: {image_path}")
 
-    img = Image.open(image_path)
-    pixels = list(img.getdata())
+    with Image.open(image_path) as img:
+        arr = np.array(img.convert("RGB"))
 
-    bits = ""
+    lsb_bits = (arr[:, :, :3] & 1).flatten()
 
-    # STEP 1: collect LSB from RGB
-    for pixel in pixels:
-        for color in pixel[:3]:  # R, G, B
-            bits += str(color & 1)
+    if len(lsb_bits) < 8:
+        raise ValueError("Image too small to contain a hidden message.")
 
-    # STEP 2: convert bits → chars
-    chars = []
+    byte_array = np.packbits(lsb_bits).tobytes()
+    message_bytes = byte_array.split(sentinel)[0]
 
-    for i in range(0, len(bits), 8):
-        byte = bits[i:i+8]
+    return message_bytes.decode("utf-8", errors="replace")
 
-        # stop condition (avoid garbage)
-        if len(byte) < 8:
-            break
 
-        char = chr(int(byte, 2))
-
-        chars.append(char)
-
-    message = "".join(chars)
-
-    return message
+def detect_pgp(text: str) -> str:
+    """Detect if extracted text contains a PGP block."""
+    if "-----BEGIN PGP MESSAGE-----" in text:
+        return "[!] PGP encrypted message detected."
+    return "[✓] No PGP signature found."

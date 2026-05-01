@@ -6,7 +6,7 @@ from metadata import extract_metadata
 from stego import extract_lsb, detect_pgp
 
 
-def format_output(result):
+def format_output(result: dict) -> str:
     """Format metadata result for human-readable output."""
     lines = []
 
@@ -26,55 +26,62 @@ def format_output(result):
     return "\n".join(lines)
 
 
+def save_output(content: str, output_path: str) -> None:
+    """Write content to file and confirm."""
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(content)
+    print(f"Data saved in {os.path.basename(output_path)}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Image Inspector")
-
-    # metadata mode
     parser.add_argument("-m", "--metadata", action="store_true", help="Extract metadata")
-
-    # stego mode (NEW)
-    parser.add_argument("-s", "--stego", action="store_true", help="Detect steganography")
-
-    parser.add_argument("-o", "--output", help="Output file path")
-    parser.add_argument("image", help="Path to image")
+    parser.add_argument("-s", "--stego",    action="store_true", help="Detect steganography")
+    parser.add_argument("-o", "--output",   help="Output file path")
+    parser.add_argument("image",            help="Path to image")
 
     args = parser.parse_args()
 
-    # check file exists
+    # Single file check lives here — stego.py no longer needs its own
     if not os.path.isfile(args.image):
         print(json.dumps({"error": "File does not exist"}, indent=2))
         return
 
     # ---------------- METADATA MODE ----------------
     if args.metadata:
-        result = extract_metadata(args.image)
-
-        output_text = format_output(result)
+        try:
+            result = extract_metadata(args.image)
+            output_text = format_output(result)
+        except Exception as e:
+            print(json.dumps({"error": f"Metadata extraction failed: {e}"}, indent=2))
+            return
 
         if args.output:
-            with open(args.output, "w") as f:
-                f.write(output_text)
-            print(f"Data saved in {os.path.basename(args.output)}")
+            save_output(output_text, args.output)
         else:
             print(output_text)
 
     # ---------------- STEGO MODE ----------------
     elif args.stego:
-        hidden = extract_lsb(args.image)
+        try:
+            hidden = extract_lsb(args.image)
+        except ValueError as e:
+            print(json.dumps({"error": str(e)}, indent=2))
+            return
+        except Exception as e:
+            print(json.dumps({"error": f"LSB extraction failed: {e}"}, indent=2))
+            return
 
         pgp_status = detect_pgp(hidden)
-
-        final_output = hidden + "\n\n" + pgp_status
+        final_output = f"{hidden}\n\n{pgp_status}"
 
         if args.output:
-            with open(args.output, "w") as f:
-                f.write(final_output)
-            print(f"Data saved in {os.path.basename(args.output)}")
+            save_output(final_output, args.output)
         else:
             print(final_output)
 
     else:
-        print("Use -m (metadata) or -s (steganography)")
+        print("Use -m for metadata or -s for steganography. Use -h for help.")
 
 
 if __name__ == "__main__":
