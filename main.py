@@ -2,8 +2,8 @@ import argparse
 import json
 import os
 
-from metadata import extract_metadata
-from stego import extract_lsb, detect_pgp
+from src.metadata import extract_metadata
+from src.stego import extract_lsb, detect_pgp
 
 
 def format_output(result: dict) -> str:
